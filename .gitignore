@@ -6,3 +6,4 @@
 */*-Debug
 .directory
 .DS_Store
+*/*.pro.user
