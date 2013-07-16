@@ -2,3 +2,7 @@
 *.o
 */bin
 */.svn
+*/*-Release
+*/*-Debug
+.directory
+.DS_Store
