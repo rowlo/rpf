@@ -7,3 +7,5 @@
 .directory
 .DS_Store
 */*.pro.user
+*build-Desktop_Qt_*
+*.pro.user.*

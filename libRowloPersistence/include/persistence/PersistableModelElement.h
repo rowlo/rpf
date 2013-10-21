@@ -43,6 +43,7 @@ class LIBROWLOPERSISTENCESHARED_EXPORT PersistableModelElement
 {
 public:
     PersistableModelElement();
+    virtual ~PersistableModelElement();
 
     QStringList propertyNames();
     QVariant getProperty(const QString &property) const;

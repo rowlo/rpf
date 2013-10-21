@@ -8,6 +8,9 @@ QT       -= gui
 
 TARGET = RowloPersistence
 TEMPLATE = lib
+VER_MAJ = 1
+VER_MIN = 0
+VER_PAT = 0rc1
 
 DEFINES += LIBROWLOPERSISTENCE_LIBRARY
 

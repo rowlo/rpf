@@ -35,6 +35,10 @@ PersistableModelElement::PersistableModelElement()
 {
 }
 
+PersistableModelElement::~PersistableModelElement()
+{
+}
+
 QString PersistableModelElement::getClassifier() const
 {
     return "rowlo::persistence::PersistableModelElement";

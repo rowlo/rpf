@@ -10,6 +10,9 @@ QT       -= gui
 
 TARGET = RowloSqlitePersistence
 TEMPLATE = lib
+VER_MAJ = 1
+VER_MIN = 0
+VER_PAT = 0rc1
 
 DEFINES += LIBROWLOSQLITEPERSISTENCE_LIBRARY
 

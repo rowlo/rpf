@@ -62,6 +62,7 @@ private:
     QString m_errorMessage;
     qint32 m_errorCode;
 };
+
 } // namespace persistence
 } // namespace rowlo
 
