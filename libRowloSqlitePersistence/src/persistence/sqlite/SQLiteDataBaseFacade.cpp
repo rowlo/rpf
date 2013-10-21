@@ -52,6 +52,10 @@ SQLiteDataBaseFacade::SQLiteDataBaseFacade() :
 {
 }
 
+SQLiteDataBaseFacade::~SQLiteDataBaseFacade()
+{
+}
+
 QSharedPointer<Error> SQLiteDataBaseFacade::connectToDb()
 {
     QSharedPointer<Error> result(new Error());

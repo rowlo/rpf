@@ -46,6 +46,7 @@ class LIBROWLOSQLITEPERSISTENCESHARED_EXPORT SQLiteDataBaseFacade :
 {
 public:
     SQLiteDataBaseFacade();
+    virtual ~SQLiteDataBaseFacade();
 
     QSharedPointer<rowlo::persistence::Error> connectToDb();
     QSharedPointer<rowlo::persistence::Error> disconnectFromDb();

@@ -37,6 +37,7 @@ class PersistableModelElementFactory : public IModelElementFactory
 
 public:
     PersistableModelElementFactory();
+    virtual ~PersistableModelElementFactory();
     QSharedPointer<PersistableModelElement> createModelElement(
                 const QString& classifier);
 };

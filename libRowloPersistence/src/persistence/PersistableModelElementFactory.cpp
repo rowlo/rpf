@@ -32,6 +32,10 @@ PersistableModelElementFactory::PersistableModelElementFactory()
 {
 }
 
+PersistableModelElementFactory::~PersistableModelElementFactory()
+{
+}
+
 QSharedPointer<PersistableModelElement> PersistableModelElementFactory::createModelElement(
         const QString &classifier)
 {

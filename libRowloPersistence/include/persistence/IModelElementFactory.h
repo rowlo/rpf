@@ -38,6 +38,7 @@ namespace persistence
 class LIBROWLOPERSISTENCESHARED_EXPORT IModelElementFactory
 {
 public:
+    virtual ~IModelElementFactory() {}
     virtual QSharedPointer<PersistableModelElement> createModelElement(
             const QString& classifier) = 0;
 };
