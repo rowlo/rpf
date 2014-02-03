@@ -230,7 +230,7 @@ void SQLiteDataBaseFacadeTest::testFind()
 
     insertTestTable();
     insertTestData();
-    QFile::copy(m_dataBaseFilePath, QString(m_dataBaseFilePath).append(".backup"));
+//    QFile::copy(m_dataBaseFilePath, QString(m_dataBaseFilePath).append(".backup"));
 
     QSharedPointer<PersistableModelElement> element;
     QList<QSharedPointer<PersistableModelElement> > results;
