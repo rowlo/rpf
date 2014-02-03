@@ -442,10 +442,11 @@ QSharedPointer<Error> SQLiteDataBaseFacade::find(
     {
         QString whereClause = QString(" WHERE %1").arg(whereParts.join(" AND "));
         sQuery = sQuery.append(whereClause);
-#ifdef ROWLO_TRACE_DB_RESULTS
-        qDebug() << QString("select query: |%1|").arg(sQuery).toLocal8Bit().data();
-#endif
     }
+#ifdef ROWLO_TRACE_DB_RESULTS
+    qDebug() << QString("select query: |%1|").arg(sQuery).toLocal8Bit().data();
+#endif
+    sQuery = sQuery.append(" ORDER BY _id_ ASC");
 
     if (not query.prepare(sQuery))
     {

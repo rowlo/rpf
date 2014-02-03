@@ -7,10 +7,14 @@
 QT       -= gui
 
 TARGET = RowloPersistence
+DESTDIR = ../../../_/lib
 TEMPLATE = lib
 VER_MAJ = 1
 VER_MIN = 0
 VER_PAT = 0rc1
+
+QMAKE_EXTRA_TARGETS += copyheaders
+POST_TARGETDEPS += copyheaders
 
 DEFINES += LIBROWLOPERSISTENCE_LIBRARY
 
@@ -31,6 +35,10 @@ HEADERS += \
     include/persistence/IDataBaseFacade.h \
     include/persistence/IModelElementFactory.h \
     include/persistence/PersistableModelElementFactory.h
+
+copyheaders.commands += mkdir -p ../../../_/include/persistence &&
+copyheaders.commands += cp -f ../../libRowloPersistence/include/*.h ../../../_/include &&
+copyheaders.commands += cp -f ../../libRowloPersistence/include/persistence/*.h ../../../_/include/persistence
 
 unix:!symbian {
     maemo5 {

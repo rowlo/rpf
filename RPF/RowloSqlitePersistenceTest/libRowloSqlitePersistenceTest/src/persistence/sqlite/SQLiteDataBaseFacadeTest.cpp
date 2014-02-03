@@ -226,82 +226,115 @@ void SQLiteDataBaseFacadeTest::testStore()
 
 void SQLiteDataBaseFacadeTest::testFind()
 {
-    QSharedPointer<PersistableModelElement> element =
-            QSharedPointer<PersistableModelElement>();
     m_dbFacade->connectToDb();
 
     insertTestTable();
     insertTestData();
-//    QFile::copy(m_dataBaseFilePath, QString(m_dataBaseFilePath).append(".backup"));
+    QFile::copy(m_dataBaseFilePath, QString(m_dataBaseFilePath).append(".backup"));
 
-    m_dbFacade->disconnectFromDb();
+    QSharedPointer<PersistableModelElement> element;
     QList<QSharedPointer<PersistableModelElement> > results;
-    QSharedPointer<Error> error = m_dbFacade->find(element, results);
-    QCOMPARE(error.isNull(), false);
-    QCOMPARE(error->isError(), true);
-    QCOMPARE(error->errorCode(), rowlo::errorcodes::DB_IS_NOT_CONNECTED);
-    QCOMPARE(results.size(), 0);
+    QSharedPointer<Error> error;
 
-    results.clear();
-    m_dbFacade->connectToDb();
-    error = m_dbFacade->find(element, results);
-    QCOMPARE(error.isNull(), false);
-    QCOMPARE(error->isError(), true);
-    QCOMPARE(error->errorCode(), rowlo::errorcodes::DB_CANNOT_FIND_NULL_ELEMENT);
-    QCOMPARE(results.size(), 0);
+    // check for DB_IS_NOT_CONNECTED
+    {
+        element = QSharedPointer<PersistableModelElement>();
+        m_dbFacade->disconnectFromDb();
+        error = m_dbFacade->find(element, results);
+        QCOMPARE(error.isNull(), false);
+        QCOMPARE(error->isError(), true);
+        QCOMPARE(error->errorCode(), rowlo::errorcodes::DB_IS_NOT_CONNECTED);
+        QCOMPARE(results.size(), 0);
+    }
 
-    results.clear();
-    element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
-    element->setProperty("_tableName_", QVariant("test_pme"));
-    error = m_dbFacade->find(element, results);
-    QCOMPARE(error.isNull(), false);
-    QCOMPARE(error->isError(), true);
-    QCOMPARE(error->errorCode(), rowlo::errorcodes::DB_ELEMENT_NOT_PERSISTABLE);
-    QCOMPARE(results.size(), 0);
+    // check for DB_CANNOT_FIND_NULL_ELEMENT
+    {
+        results.clear();
+        element = QSharedPointer<PersistableModelElement>();
+        m_dbFacade->connectToDb();
+        error = m_dbFacade->find(element, results);
+        QCOMPARE(error.isNull(), false);
+        QCOMPARE(error->isError(), true);
+        QCOMPARE(error->errorCode(), rowlo::errorcodes::DB_CANNOT_FIND_NULL_ELEMENT);
+        QCOMPARE(results.size(), 0);
+    }
 
-    results.clear();
-    element->setProperty("_tableName_", QVariant("test_pme;'&"));
-    element->setProperty("_id_", QVariant(-1));
-    error = m_dbFacade->find(element, results);
-    QCOMPARE(error.isNull(), false);
-    QCOMPARE(error->isError(), true);
-    QCOMPARE(error->errorCode(), rowlo::errorcodes::DB_FAILED_TO_PREPARE_QUERY);
-    QCOMPARE(results.size(), 0);
+    // check for DB_ELEMENT_NOT_PERSISTABLE
+    {
+        results.clear();
+        element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
+        element->setProperty("_tableName_", QVariant("test_pme"));
+        error = m_dbFacade->find(element, results);
+        QCOMPARE(error.isNull(), false);
+        QCOMPARE(error->isError(), true);
+        QCOMPARE(error->errorCode(), rowlo::errorcodes::DB_ELEMENT_NOT_PERSISTABLE);
+        QCOMPARE(results.size(), 0);
+    }
 
-    results.clear();
-    element->setProperty("_tableName_", QVariant("test_pme"));
-    error = m_dbFacade->find(element, results);
-    QCOMPARE(error.isNull(), false);
-    QCOMPARE(error->isError(), false);
-    QCOMPARE(error->errorCode(), 0);
-    QCOMPARE(results.size(), 2);
-    QSharedPointer<PersistableModelElement> resultElement = results.at(0);
-    QVERIFY(not resultElement.isNull());
-    QCOMPARE(resultElement->getClassifier(),
-             QString("rowlo::persistence::PersistableModelElement"));
-    QCOMPARE(resultElement->getProperty("_tableName_").toString(),
-             QString("test_pme"));
-    QCOMPARE(resultElement->getProperty("foo").toString(),
-             QString("value of foo"));
-    resultElement = results.at(1);
-    QVERIFY(not resultElement.isNull());
-    QCOMPARE(resultElement->getClassifier(),
-             QString("rowlo::persistence::PersistableModelElement"));
-    QCOMPARE(resultElement->getProperty("_tableName_").toString(),
-             QString("test_pme"));
-    QCOMPARE(resultElement->getProperty("foo").toString(),
-             QString("value of bar"));
+    // check for DB_FAILED_TO_PREPARE_QUERY
+    {
+        results.clear();
+        element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
+        element->setProperty("_tableName_", QVariant("test_pme;'&"));
+        element->setProperty("_id_", QVariant(-1));
+        error = m_dbFacade->find(element, results);
+        QCOMPARE(error.isNull(), false);
+        QCOMPARE(error->isError(), true);
+        QCOMPARE(error->errorCode(), rowlo::errorcodes::DB_FAILED_TO_PREPARE_QUERY);
+        QCOMPARE(results.size(), 0);
+    }
 
-    results.clear();
-    element->setProperty("_id_", QVariant(1));
-    error = m_dbFacade->find(element, results);
-    QCOMPARE(error.isNull(), false);
-    QCOMPARE(error->isError(), false);
-    QCOMPARE(error->errorCode(), 0);
-    QCOMPARE(results.size(), 1);
-    resultElement = results.at(0);
-    QVERIFY(not resultElement.isNull());
-    QCOMPARE(resultElement->getProperty("_id_").toInt(), 1);
+    // check for finding all elements
+    {
+        results.clear();
+        element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
+        element->setProperty("_tableName_", QVariant("test_pme"));
+        element->setProperty("_id_", QVariant(-1));
+        error = m_dbFacade->find(element, results);
+        QCOMPARE(error.isNull(), false);
+        QCOMPARE(error->isError(), false);
+        QCOMPARE(error->errorCode(), 0);
+
+        QCOMPARE(results.size(), 2);
+
+        QSharedPointer<PersistableModelElement> resultElement = results.at(0);
+        QVERIFY(not resultElement.isNull());
+        QCOMPARE(resultElement->getClassifier(),
+                 QString("rowlo::persistence::PersistableModelElement"));
+        QCOMPARE(resultElement->getProperty("_tableName_").toString(),
+                 QString("test_pme"));
+        QCOMPARE(resultElement->getProperty("_id_").toInt(), 1);
+        QCOMPARE(resultElement->getProperty("foo").toString(),
+                 QString("value of foo"));
+
+        resultElement = results.at(1);
+        QVERIFY(not resultElement.isNull());
+        QCOMPARE(resultElement->getClassifier(),
+                 QString("rowlo::persistence::PersistableModelElement"));
+        QCOMPARE(resultElement->getProperty("_tableName_").toString(),
+                 QString("test_pme"));
+        QCOMPARE(resultElement->getProperty("_id_").toInt(), 2);
+        QCOMPARE(resultElement->getProperty("foo").toString(),
+                 QString("value of bar"));
+    }
+
+    // check find element by id
+    {
+        results.clear();
+        element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
+        element->setProperty("_tableName_", QVariant("test_pme"));
+        element->setProperty("_id_", QVariant(1));
+        error = m_dbFacade->find(element, results);
+        QCOMPARE(error.isNull(), false);
+        QCOMPARE(error->isError(), false);
+        QCOMPARE(error->errorCode(), 0);
+
+        QCOMPARE(results.size(), 1);
+
+        QSharedPointer<PersistableModelElement> resultElement = results.at(0);
+        QVERIFY(not resultElement.isNull());
+        QCOMPARE(resultElement->getProperty("_id_").toInt(), 1);
+    }
 }
 
 void SQLiteDataBaseFacadeTest::testUpdate()

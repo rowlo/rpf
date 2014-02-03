@@ -8,4 +8,6 @@
 .DS_Store
 */*.pro.user
 *build-Desktop_Qt_*
-*.pro.user.*
+*.pro.user*
+_
+*/_

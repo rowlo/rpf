@@ -9,6 +9,7 @@ QT       += core gui testlib
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = tst_librowlopersistencetest
+DESTDIR = ../tests
 CONFIG   += console
 CONFIG   -= app_bundle
 
@@ -22,16 +23,22 @@ TEMPLATE = app
 
 INCLUDEPATH += \
     include \
-    ../libRowloPersistence/include
+# INCLUDEPATH is used by build and by qtcreator, however, work dir for build is one level deeper.
+# Hence, specifying only build-relative-path breaks qtcreator's source lookup. Working around by
+# spezifying paths for both.
+# Those are the relative paths for building (build view):
+    ../../../RowloPersistence/libRowloPersistence/include \
+# Those are the relative paths for qtcreator (source view):
+    ../../RowloPersistence/libRowloPersistence/include
 
 SOURCES += \
     src/tst_librowlopersistencetest.cpp \
     src/persistence/PersistableModelElementTest.cpp \
     src/persistence/ErrorTest.cpp \
-    ../libRowloPersistence/src/persistence/Error.cpp \
-    ../libRowloPersistence/src/persistence/PersistableModelElement.cpp \
-    ../libRowloPersistence/src/persistence/PersistableModelElementFactory.cpp \
-    ../libRowloPersistence/src/LibRowloPersistenceMain.cpp \
+    ../../../RowloPersistence/libRowloPersistence/src/persistence/Error.cpp \
+    ../../../RowloPersistence/libRowloPersistence/src/persistence/PersistableModelElement.cpp \
+    ../../../RowloPersistence/libRowloPersistence/src/persistence/PersistableModelElementFactory.cpp \
+    ../../../RowloPersistence/libRowloPersistence/src/LibRowloPersistenceMain.cpp \
     src/persistence/PersistableModelElementFactoryTest.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
