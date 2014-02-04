@@ -7,7 +7,17 @@
 QT       -= gui
 
 TARGET = RowloPersistence
-DESTDIR = ../../../_/lib
+
+LIB_DIRNAME = libRowloPersistence
+
+BUILD_DIR = ../..
+SOURCE_DIR = $${BUILD_DIR}/../$${LIB_DIRNAME}
+TOPLEVEL_DIR = $${BUILD_DIR}/../..
+LIB_TARGET_DIR = $${TOPLEVEL_DIR}/_/lib
+INCLUDE_TARGET_DIR = $${TOPLEVEL_DIR}/_/include
+TESTCOVERAGE_DIR = $${BUILD_DIR}/testcoverage/$${LIB_DIRNAME}
+
+DESTDIR = $${LIB_TARGET_DIR}
 TEMPLATE = lib
 VER_MAJ = 1
 VER_MIN = 0
@@ -36,9 +46,9 @@ HEADERS += \
     include/persistence/IModelElementFactory.h \
     include/persistence/PersistableModelElementFactory.h
 
-copyheaders.commands += mkdir -p ../../../_/include/persistence &&
-copyheaders.commands += cp -f ../../libRowloPersistence/include/*.h ../../../_/include &&
-copyheaders.commands += cp -f ../../libRowloPersistence/include/persistence/*.h ../../../_/include/persistence
+copyheaders.commands += mkdir -p $${INCLUDE_TARGET_DIR}/persistence &&
+copyheaders.commands += cp -f $${SOURCE_DIR}/include/*.h $${INCLUDE_TARGET_DIR} &&
+copyheaders.commands += cp -f $${SOURCE_DIR}/include/persistence/*.h $${INCLUDE_TARGET_DIR}/persistence
 
 unix:!symbian {
     maemo5 {

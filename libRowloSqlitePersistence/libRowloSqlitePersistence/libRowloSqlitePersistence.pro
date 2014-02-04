@@ -9,7 +9,21 @@ QT       += sql
 QT       -= gui
 
 TARGET = RowloSqlitePersistence
-DESTDIR = ../../../_/lib
+
+LIB_DIRNAME = libRowloSqlitePersistence
+BASELIB_DIRNAME = libRowloPersistence
+
+BUILD_DIR = ../..
+SOURCE_DIR = $${BUILD_DIR}/../$${LIB_DIRNAME}
+SOURCE_INCLUDE_DIR = ../$${LIB_DIRNAME}
+TOPLEVEL_DIR = $${BUILD_DIR}/../..
+BASESOURCE_DIR = $${BUILD_DIR}/../../$${BASELIB_DIRNAME}/$${BASELIB_DIRNAME}
+BASESOURCE_INCLUDE_DIR = ../../$${BASELIB_DIRNAME}/$${BASELIB_DIRNAME}
+LIB_TARGET_DIR = $${TOPLEVEL_DIR}/_/lib
+INCLUDE_TARGET_DIR = $${TOPLEVEL_DIR}/_/include
+TESTCOVERAGE_DIR = $${BUILD_DIR}/testcoverage/$${LIB_DIRNAME}
+
+DESTDIR = $${LIB_TARGET_DIR}
 TEMPLATE = lib
 VER_MAJ = 1
 VER_MIN = 0
@@ -30,18 +44,18 @@ INCLUDEPATH += \
 # Hence, specifying only build-relative-path breaks qtcreator's source lookup. Working around by
 # spezifying paths for both.
 # Those are the relative paths for building (build view):
-    ../../../RowloPersistence/libRowloPersistence/include \
+    $${BASESOURCE_DIR}/include \
 # Those are the relative paths for qtcreator (source view):
-    ../../RowloPersistence/libRowloPersistence/include
+    $${BASESOURCE_INCLUDE_DIR}/include
 
 HEADERS += LibRowloSqlitePersistenceMain.h\
         libRowloSqlitePersistence_global.h \
     include/persistence/sqlite/SQLiteDataBaseFacade.h \
     include/persistence/sqlite/ErrorCodes.h
 
-copyheaders.commands += mkdir -p ../../../_/include/persistence/sqlite &&
-copyheaders.commands += cp -f ../../libRowloSqlitePersistence/include/*.h ../../../_/include &&
-copyheaders.commands += cp -f ../../libRowloSqlitePersistence/include/persistence/sqlite/*.h ../../../_/include/persistence/sqlite
+copyheaders.commands += mkdir -p $${INCLUDE_TARGET_DIR}/persistence/sqlite &&
+copyheaders.commands += cp -f $${SOURCE_DIR}/include/*.h $${INCLUDE_TARGET_DIR} &&
+copyheaders.commands += cp -f $${SOURCE_DIR}/include/persistence/sqlite/*.h $${INCLUDE_TARGET_DIR}/persistence/sqlite
 
 unix:!symbian {
     maemo5 {
@@ -53,4 +67,4 @@ unix:!symbian {
 }
 
 LIBS += \
-    -L../../../_/lib -lRowloPersistence
+    -L$${LIB_TARGET_DIR} -lRowloPersistence
