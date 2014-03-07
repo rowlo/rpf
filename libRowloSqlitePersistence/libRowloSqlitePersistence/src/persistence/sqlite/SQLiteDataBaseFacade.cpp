@@ -47,7 +47,7 @@ namespace sqlite
 
 SQLiteDataBaseFacade::SQLiteDataBaseFacade() :
     m_sqlDataBase(QSharedPointer<QSqlDatabase>()),
-    m_connectionName("IconBrowserConnection"),
+    m_connectionName("SQLiteDataBaseConnection"),
     m_dataBaseFilePath(QDir::currentPath() + QDir::separator() + "data.db.sql3")
 {
 }

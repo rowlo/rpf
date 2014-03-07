@@ -54,13 +54,11 @@ INCLUDEPATH += \
     $${BASESOURCE_INCLUDE_DIR}/include \
     $${SOURCE_INCLUDE_DIR}/include
 
-SOURCES += src/tst_librowlosqlitepersistencetest.cpp \
-    src/persistence/sqlite/SQLiteDataBaseFacadeTest.cpp \
-    $${BASESOURCE_DIR}/src/persistence/Error.cpp \
-    $${BASESOURCE_DIR}/src/persistence/PersistableModelElement.cpp \
-    $${BASESOURCE_DIR}/src/persistence/PersistableModelElementFactory.cpp \
-    $${SOURCE_DIR}/src/persistence/sqlite/SQLiteDataBaseFacade.cpp \
-    $${SOURCE_DIR}/src/LibRowloSqlitePersistenceMain.cpp
+SOURCES += \
+    $$system(find $${SOURCE_INCLUDE_DIR}/src -name \'*.cpp\' ) \
+    $$system(find $${BASESOURCE_INCLUDE_DIR}/src -name \'*.cpp\' ) \
+    src/tst_librowlosqlitepersistencetest.cpp \
+    src/persistence/sqlite/SQLiteDataBaseFacadeTest.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 

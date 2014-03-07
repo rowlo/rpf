@@ -50,13 +50,10 @@ INCLUDEPATH += \
     $${SOURCE_INCLUDE_DIR}/include
 
 SOURCES += \
+    $$system(find $${SOURCE_INCLUDE_DIR}/src -name \'*.cpp\' ) \
     src/tst_librowlopersistencetest.cpp \
     src/persistence/PersistableModelElementTest.cpp \
     src/persistence/ErrorTest.cpp \
-    $${SOURCE_DIR}/src/persistence/Error.cpp \
-    $${SOURCE_DIR}/src/persistence/PersistableModelElement.cpp \
-    $${SOURCE_DIR}/src/persistence/PersistableModelElementFactory.cpp \
-    $${SOURCE_DIR}/src/LibRowloPersistenceMain.cpp \
     src/persistence/PersistableModelElementFactoryTest.cpp
 
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
