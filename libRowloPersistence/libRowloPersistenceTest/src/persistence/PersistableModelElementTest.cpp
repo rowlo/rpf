@@ -24,6 +24,7 @@
 */
 #include "persistence/PersistableModelElementTest.h"
 #include "persistence/PersistableModelElement.h"
+#include "persistence/ErrorCodes.h"
 #include "LibRowloPersistenceMain.h"
 
 #include <QString>
@@ -126,9 +127,9 @@ void PersistableModelElementTest::testSetProperties_data()
     QTest::newRow("ClearExistingReadOnlyValue") << "mBuf" << QVariant() << true << 0 << 0;
     QList<QVariant> vList;
     vList << QVariant(1);
-    QTest::newRow("errorOnWrongTableNametype")
-            << "_tableName_" << QVariant(vList) << false
-            << rowlo::errorcodes::PROPERTY_TABLENAME_IS_NO_QSTRING << 0;
+    QTest::newRow("errorOnWrongStorageNametype")
+            << "_storageName_" << QVariant(vList) << false
+            << rowlo::errorcodes::PROPERTY_STORAGENAME_IS_NO_QSTRING << 0;
     QTest::newRow("errorOnWrongIdNametype")
             << "_id_" << QVariant(vList) << false
             << rowlo::errorcodes::PROPERTY_ID_IS_NO_INT << 0;
@@ -186,16 +187,16 @@ void PersistableModelElementTest::testIsPersistable()
     PersistableModelElement* element = new PersistableModelElement();
     QCOMPARE(element->isPersistable(), false);
 
-    element->setProperty("_tableName_", QVariant("fooBar"), true);
+    element->setProperty("_storageName_", QVariant("fooBar"), true);
     QCOMPARE(element->isPersistable(), false);
-    element->setProperty("_tableName_", QVariant(), true);
+    element->setProperty("_storageName_", QVariant(), true);
     QCOMPARE(element->isPersistable(), false);
     element->setProperty("_id_", QVariant(123456), true);
     QCOMPARE(element->isPersistable(), false);
     element->setProperty("_id_", QVariant(), true);
     QCOMPARE(element->isPersistable(), false);
 
-    element->setProperty("_tableName_", QVariant("fooBar"), true);
+    element->setProperty("_storageName_", QVariant("fooBar"), true);
     element->setProperty("_id_", QVariant(123456), true);
     QCOMPARE(element->isPersistable(), true);
 

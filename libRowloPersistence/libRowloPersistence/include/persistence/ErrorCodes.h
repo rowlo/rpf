@@ -1,10 +1,10 @@
 /*
  * RPF - Rowlo Persistence Framework: Basic persistence layer for data model elements.
  *
- * File:    libRowloPersistence/include/persistence/Error.h
- * Brief:   Most generic error codes and Error interface.
+ * File:    libRowloPersistence/include/persistence/ErrorCodes.h
+ * Brief:   Error codes used by persistable model element.
  *
- * Copyright (C) 2013  Robert Wloch (robert@rowlo.de)
+ * Copyright (C) 2014  Robert Wloch (robert@rowlo.de)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,41 +21,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * or browse: http://www.gnu.org/licenses/lgpl-2.1.html
 */
-#ifndef ERROR_H
-#define ERROR_H
-
-#include <QList>
-#include <QObject>
-#include <QSharedPointer>
-#include <QString>
-
-#include "libRowloPersistence_global.h"
+#ifndef ERRORCODES_H
+#define ERRORCODES_H
 
 namespace rowlo
 {
-namespace persistence
+namespace errorcodes
 {
-class LIBROWLOPERSISTENCESHARED_EXPORT Error
-{
-
-public:
-    Error(const QString &errorMessage = QObject::tr("No error."), qint32 errorCode = 0);
-    ~Error();
-    QString errorMessage() const;
-    qint32 errorCode() const;
-    bool isError() const;
-
-private:
-    QString m_errorMessage;
-    qint32 m_errorCode;
-};
-
-} // namespace persistence
+    const int MUST_NOT_SET_READONLY_FLAG = 1001;
+    const int MUST_NOT_CHANGE_READONLY_PROPERTY = 1002;
+    const int PROPERTY_MUST_NOT_BE_NULL = 1003;
+    const int PROPERTY_STORAGENAME_IS_NO_QSTRING = 1004;
+    const int PROPERTY_ID_IS_NO_INT = 1005;
+} // namespace errorcodes
 } // namespace rowlo
 
-Q_DECLARE_METATYPE(rowlo::persistence::Error)
-Q_DECLARE_METATYPE(QSharedPointer<rowlo::persistence::Error>)
-Q_DECLARE_METATYPE(QList<rowlo::persistence::Error>)
-Q_DECLARE_METATYPE(QList<QSharedPointer<rowlo::persistence::Error> >)
-
-#endif // ERROR_H
+#endif // ERRORCODES_H

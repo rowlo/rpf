@@ -22,6 +22,7 @@
  * or browse: http://www.gnu.org/licenses/lgpl-2.1.html
 */
 #include "persistence/PersistableModelElement.h"
+#include "persistence/ErrorCodes.h"
 #include "persistence/Error.h"
 
 #include <QSharedPointer>
@@ -44,7 +45,7 @@ QString PersistableModelElement::getClassifier() const
     return "rowlo::persistence::PersistableModelElement";
 }
 
-QStringList PersistableModelElement::propertyNames()
+QStringList PersistableModelElement::propertyNames() const
 {
     return m_properties.keys();
 }
@@ -94,11 +95,11 @@ QSharedPointer<Error> PersistableModelElement::setProperty(
 
     // value is not null beyond that line
 
-    if (property == "_tableName_" && not value.canConvert<QString>())
+    if (property == "_storageName_" && not value.canConvert<QString>())
     {
         error = QSharedPointer<Error>(new Error(
-                                          QObject::tr("Property _tableName_ has no QString value!"),
-                                          rowlo::errorcodes::PROPERTY_TABLENAME_IS_NO_QSTRING));
+                                          QObject::tr("Property _storageName_ has no QString value!"),
+                                          rowlo::errorcodes::PROPERTY_STORAGENAME_IS_NO_QSTRING));
         return error;
     }
     if (property == "_id_" && not value.canConvert<int>())
@@ -126,9 +127,9 @@ QSharedPointer<Error> PersistableModelElement::setProperty(
     return error;
 }
 
-bool PersistableModelElement::isPersistable()
+bool PersistableModelElement::isPersistable() const
 {
-    return m_properties.contains("_tableName_") && m_properties.contains("_id_");
+    return m_properties.contains("_storageName_") && m_properties.contains("_id_");
 }
 
 } // namespace persistence

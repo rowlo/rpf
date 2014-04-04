@@ -44,7 +44,10 @@ HEADERS += \
     include/persistence/PersistableModelElement.h \
     include/persistence/IDataBaseFacade.h \
     include/persistence/IModelElementFactory.h \
-    include/persistence/PersistableModelElementFactory.h
+    include/persistence/PersistableModelElementFactory.h \
+    include/libRowloPersistence_global.h \
+    include/LibRowloPersistenceMain.h \
+    include/persistence/ErrorCodes.h
 
 copyheaders.commands += mkdir -p $${INCLUDE_TARGET_DIR}/persistence &&
 copyheaders.commands += cp -f $${SOURCE_DIR}/include/*.h $${INCLUDE_TARGET_DIR} &&

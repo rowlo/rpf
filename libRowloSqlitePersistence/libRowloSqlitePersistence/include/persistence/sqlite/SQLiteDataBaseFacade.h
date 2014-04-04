@@ -32,6 +32,7 @@
 #include <QSharedPointer>
 #include <QSqlQuery>
 #include <QStringList>
+#include <QDir>
 #include <QList>
 
 namespace rowlo
@@ -45,7 +46,10 @@ class LIBROWLOSQLITEPERSISTENCESHARED_EXPORT SQLiteDataBaseFacade :
         virtual public IDataBaseFacade
 {
 public:
-    SQLiteDataBaseFacade();
+    SQLiteDataBaseFacade(
+            const QString &connectionName = "SQLiteDataBaseConnection",
+            const QString &pathToDataBase = QDir::currentPath() + QDir::separator(),
+            const QString &dataBaseFile = "data.db.sql3");
     virtual ~SQLiteDataBaseFacade();
 
     QSharedPointer<rowlo::persistence::Error> connectToDb();
@@ -78,7 +82,7 @@ public:
             const QSharedPointer<IModelElementFactory> &factory);
 
 protected:
-    QString tableName(
+    QString storageName(
             const QSharedPointer<rowlo::persistence::PersistableModelElement> &element);
     QString fieldsAsList(
             const QSharedPointer<rowlo::persistence::PersistableModelElement> &element);
@@ -88,7 +92,7 @@ protected:
             const QSharedPointer<PersistableModelElement> &element);
     void makeStoreColumnLists(const QSharedPointer<PersistableModelElement> &element,
             QStringList &columnList, QStringList &columnBindList,
-            bool skipId = false);
+            const bool &skipId = false);
     void bindStoreValues(
             const QSharedPointer<PersistableModelElement> &element,
             const QStringList &columnList, const QStringList &columnBindList,

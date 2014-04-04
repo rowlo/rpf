@@ -22,7 +22,7 @@
  * or browse: http://www.gnu.org/licenses/lgpl-2.1.html
 */
 #include "persistence/sqlite/SQLiteDataBaseFacade.h"
-#include "persistence/sqlite/ErrorCodes.h"
+#include "persistence/sqlite/ErrorCodesSqlite.h"
 
 #include <QDir>
 #include <QObject>
@@ -45,10 +45,13 @@ namespace persistence
 namespace sqlite
 {
 
-SQLiteDataBaseFacade::SQLiteDataBaseFacade() :
+SQLiteDataBaseFacade::SQLiteDataBaseFacade(
+        const QString &connectionName,
+        const QString &pathToDataBase,
+        const QString &dataBaseFile) :
     m_sqlDataBase(QSharedPointer<QSqlDatabase>()),
-    m_connectionName("SQLiteDataBaseConnection"),
-    m_dataBaseFilePath(QDir::currentPath() + QDir::separator() + "data.db.sql3")
+    m_connectionName(connectionName),
+    m_dataBaseFilePath(pathToDataBase + dataBaseFile)
 {
 }
 
@@ -153,7 +156,7 @@ QSharedPointer<Error> SQLiteDataBaseFacade::store(
         else if (not element->isPersistable())
         {
             error = QSharedPointer<Error>(new Error(
-                     QObject::tr("Element is not persistable (has no _tableName_ and/or _id_ property)!"),
+                     QObject::tr("Element is not persistable (has no _storageName_ and/or _id_ property)!"),
                                                rowlo::errorcodes::DB_ELEMENT_NOT_PERSISTABLE));
         }
         else
@@ -177,7 +180,7 @@ QSharedPointer<Error> SQLiteDataBaseFacade::storeWithinTransaction(
 {
     QSharedPointer<Error> error(new Error());
 
-    QString tableName = element->getProperty("_tableName_").toString();
+    QString storageName = element->getProperty("_storageName_").toString();
     QStringList columnList;
     QStringList columnBindList;
     makeStoreColumnLists(element, columnList, columnBindList);
@@ -186,7 +189,7 @@ QSharedPointer<Error> SQLiteDataBaseFacade::storeWithinTransaction(
 
     QSqlQuery query(*(m_sqlDataBase));
     QString sQuery = QString("INSERT INTO %1 (%2) VALUES (%3)")
-            .arg(tableName, columnsAsList, columnBindsAsList);
+            .arg(storageName, columnsAsList, columnBindsAsList);
     if (not query.prepare(sQuery))
     {
         QString errorText = m_sqlDataBase->lastError().text();
@@ -243,7 +246,7 @@ QSharedPointer<Error> SQLiteDataBaseFacade::update(
         else if (not element->isPersistable())
         {
             error = QSharedPointer<Error>(new Error(
-                     QObject::tr("Element is not persistable (has no _tableName_ and/or _id_ property)!"),
+                     QObject::tr("Element is not persistable (has no _storageName_ and/or _id_ property)!"),
                                                rowlo::errorcodes::DB_ELEMENT_NOT_PERSISTABLE));
         }
         else if (not elementExistsInDatabase(element))
@@ -272,7 +275,7 @@ QSharedPointer<Error> SQLiteDataBaseFacade::updateWithinTransaction(
 {
     QSharedPointer<Error> error(new Error());
 
-    QString tableName = element->getProperty("_tableName_").toString();
+    QString storageName = element->getProperty("_storageName_").toString();
     QStringList columnList;
     QStringList columnBindList;
     makeStoreColumnLists(element, columnList, columnBindList, true);
@@ -285,7 +288,7 @@ QSharedPointer<Error> SQLiteDataBaseFacade::updateWithinTransaction(
     int elementId = element->getProperty("_id_").toInt();
     QSqlQuery query(*(m_sqlDataBase));
     QString sQuery = QString("UPDATE %1 SET %2 WHERE _id_=%3")
-            .arg(tableName, updateFields.join(" ,"))
+            .arg(storageName, updateFields.join(" ,"))
             .arg(elementId);
     if (not query.prepare(sQuery))
     {
@@ -323,7 +326,7 @@ bool SQLiteDataBaseFacade::elementExistsInDatabase(
     // Person, Address, etc exist only to make programmers' lifes easier. ;-)
     QSharedPointer<PersistableModelElement> queryElement =
             QSharedPointer<PersistableModelElement>(new PersistableModelElement());
-    queryElement->setProperty("_tableName_", element->getProperty("_tableName_"));
+    queryElement->setProperty("_storageName_", element->getProperty("_storageName_"));
     queryElement->setProperty("_id_", element->getProperty("_id_"));
     QList<QSharedPointer<PersistableModelElement> > results;
 
@@ -336,14 +339,14 @@ bool SQLiteDataBaseFacade::elementExistsInDatabase(
 void SQLiteDataBaseFacade::makeStoreColumnLists(
         const QSharedPointer<PersistableModelElement> &element,
         QStringList &columnList, QStringList &columnBindList,
-        bool skipId)
+        const bool &skipId)
 {
     if (not element.isNull())
     {
         QStringList columnListAll = element->propertyNames();
         foreach (QString columnName, columnListAll)
         {
-            if ("_tableName_" == columnName
+            if ("_storageName_" == columnName
                     || columnName.startsWith("_readOnly_"))
             {
                 continue;
@@ -404,17 +407,17 @@ QSharedPointer<Error> SQLiteDataBaseFacade::find(
     if (not element->isPersistable())
     {
         error = QSharedPointer<Error>(new Error(
-                 QObject::tr("Element is not persistable (has no _tableName_ and/or _id_ property)!"),
+                 QObject::tr("Element is not persistable (has no _storageName_ and/or _id_ property)!"),
                                            rowlo::errorcodes::DB_ELEMENT_NOT_PERSISTABLE));
         return error;
     }
 
-    QString tableName = element->getProperty("_tableName_").toString();
+    QString storageName = element->getProperty("_storageName_").toString();
 
     QStringList whereParts;
     foreach (const QString &property, element->propertyNames())
     {
-        if (property.isNull() || property.isEmpty() || property == "_tableName_")
+        if (property.isNull() || property.isEmpty() || property == "_storageName_")
         {
             continue;
         }
@@ -437,7 +440,7 @@ QSharedPointer<Error> SQLiteDataBaseFacade::find(
     }
 
     QSqlQuery query(*(m_sqlDataBase));
-    QString sQuery = QString("SELECT * FROM %1").arg(tableName);
+    QString sQuery = QString("SELECT * FROM %1").arg(storageName);
     if (not whereParts.isEmpty())
     {
         QString whereClause = QString(" WHERE %1").arg(whereParts.join(" AND "));
@@ -542,7 +545,7 @@ QSharedPointer<Error> SQLiteDataBaseFacade::createModelElement(
     }
 
     result->setProperty("_id_", QVariant(-1));
-    result->setProperty("_tableName_", element->getProperty("_tableName_"));
+    result->setProperty("_storageName_", element->getProperty("_storageName_"));
     typedef QPair<QString, QVariant> PairStringVariant;
     foreach (PairStringVariant elementValue, elementValues)
     {
@@ -585,15 +588,15 @@ QSharedPointer<Error> SQLiteDataBaseFacade::remove(
         if (not element->isPersistable())
         {
             error = QSharedPointer<Error>(new Error(
-                     QObject::tr("Element is not persistable (has no _tableName_ and/or _id_ property)!"),
+                     QObject::tr("Element is not persistable (has no _storageName_ and/or _id_ property)!"),
                                                rowlo::errorcodes::DB_ELEMENT_NOT_PERSISTABLE));
             return error;
         }
 
-        QString tableName = element->getProperty("_tableName_").toString();
+        QString storageName = element->getProperty("_storageName_").toString();
         int elementId = element->getProperty("_id_").toInt();
         QSqlQuery query(*(m_sqlDataBase));
-        QString sQuery = QString("DELETE FROM %1 WHERE _id_=%2").arg(tableName).arg(elementId);
+        QString sQuery = QString("DELETE FROM %1 WHERE _id_=%2").arg(storageName).arg(elementId);
 
         if (not query.prepare(sQuery))
         {

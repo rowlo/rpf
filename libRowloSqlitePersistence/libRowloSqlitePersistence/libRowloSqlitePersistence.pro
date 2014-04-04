@@ -51,7 +51,7 @@ INCLUDEPATH += \
 HEADERS += LibRowloSqlitePersistenceMain.h\
         libRowloSqlitePersistence_global.h \
     include/persistence/sqlite/SQLiteDataBaseFacade.h \
-    include/persistence/sqlite/ErrorCodes.h
+    include/persistence/sqlite/ErrorCodesSqlite.h
 
 copyheaders.commands += mkdir -p $${INCLUDE_TARGET_DIR}/persistence/sqlite &&
 copyheaders.commands += cp -f $${SOURCE_DIR}/include/*.h $${INCLUDE_TARGET_DIR} &&

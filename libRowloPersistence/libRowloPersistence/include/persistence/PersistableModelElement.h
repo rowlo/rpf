@@ -45,12 +45,12 @@ public:
     PersistableModelElement();
     virtual ~PersistableModelElement();
 
-    QStringList propertyNames();
+    QStringList propertyNames() const;
     QVariant getProperty(const QString &property) const;
     QSharedPointer<Error> setProperty(
             const QString &property, const QVariant &value, bool readOnly = false);
     virtual QString getClassifier() const;
-    bool isPersistable();
+    bool isPersistable() const;
 
 private:
     QMap<QString, QVariant> m_properties;

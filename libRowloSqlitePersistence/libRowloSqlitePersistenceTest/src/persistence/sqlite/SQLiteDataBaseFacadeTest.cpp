@@ -26,7 +26,7 @@
 #include "persistence/PersistableModelElementFactory.h"
 #include "persistence/sqlite/SQLiteDataBaseFacade.h"
 #include "persistence/Error.h"
-#include "persistence/sqlite/ErrorCodes.h"
+#include "persistence/sqlite/ErrorCodesSqlite.h"
 #include "LibRowloSqlitePersistenceMain.h"
 
 #include <QFile>
@@ -36,6 +36,8 @@
 #include <QString>
 #include <QTextStream>
 #include <QtTest>
+
+#include <QDebug>
 
 using rowlo::persistence::Error;
 using rowlo::persistence::PersistableModelElement;
@@ -100,13 +102,24 @@ void SQLiteDataBaseFacadeTest::testConnectToDb()
     file.close();
     QCOMPARE(file.exists(), true);
 
+    QSharedPointer<Error> error(0);
+
     result = file.setPermissions(0);
-    QCOMPARE(result, true);
-    QSharedPointer<Error> error = m_dbFacade->connectToDb();
-    QCOMPARE(error.isNull(), false);
-    QCOMPARE(error->isError(), true);
-    QCOMPARE(error->errorCode(), rowlo::errorcodes::DB_CANNOT_BE_OPENED);
-    file.setPermissions(QFileDevice::ReadOwner|QFileDevice::WriteOwner);
+    QFile::Permissions filePermissions = file.permissions();
+    // only test if setting permissions is supported by file system
+    if (filePermissions == 0)
+    {
+        QCOMPARE(result, true);
+        error = m_dbFacade->connectToDb();
+        QCOMPARE(error.isNull(), false);
+        QCOMPARE(error->isError(), true);
+        QCOMPARE(error->errorCode(), rowlo::errorcodes::DB_CANNOT_BE_OPENED);
+        file.setPermissions(QFileDevice::ReadOwner|QFileDevice::WriteOwner);
+    }
+    else
+    {
+        qDebug() << "skipping test to open file without sufficient permissions (changing permissions not supported by file system)";
+    }
 
     file.remove();
     QCOMPARE(file.exists(), false);
@@ -191,7 +204,7 @@ void SQLiteDataBaseFacadeTest::testStore()
 
     // check for DB_FAILED_TO_PREPARE_QUERY error
     {
-        element->setProperty("_tableName_", QVariant("test_pme"), true);
+        element->setProperty("_storageName_", QVariant("test_pme"), true);
         element->setProperty("_id_", QVariant(-1), true);
         element->setProperty("bam;", QVariant("exploit"));
         QSharedPointer<Error> error = m_dbFacade->store(element);
@@ -201,11 +214,24 @@ void SQLiteDataBaseFacadeTest::testStore()
         element->setProperty("bam;", QVariant());
     }
 
+    // check for DB_FAILED_TO_PREPARE_QUERY error
+    {
+        element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
+        element->setProperty("_storageName_", QVariant("test_pme"), true);
+        element->setProperty("_id_", QVariant(-1), true);
+        element->setProperty("unknownProperty", QVariant("unknown"));
+        QSharedPointer<Error> error = m_dbFacade->store(element);
+        QCOMPARE(error.isNull(), false);
+        QCOMPARE(error->isError(), true);
+        QCOMPARE(error->errorCode(), rowlo::errorcodes::DB_FAILED_TO_PREPARE_QUERY);
+        element->setProperty("unknownProperty", QVariant());
+    }
+
     // check for successful store
     {
         element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
         element->setProperty("foo", QVariant("bar"));
-        element->setProperty("_tableName_", QVariant("test_pme"), true);
+        element->setProperty("_storageName_", QVariant("test_pme"), true);
         element->setProperty("_id_", QVariant(-1), true);
 
         QSharedPointer<Error> error = m_dbFacade->store(element);
@@ -263,7 +289,7 @@ void SQLiteDataBaseFacadeTest::testFind()
     {
         results.clear();
         element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
-        element->setProperty("_tableName_", QVariant("test_pme"));
+        element->setProperty("_storageName_", QVariant("test_pme"));
         error = m_dbFacade->find(element, results);
         QCOMPARE(error.isNull(), false);
         QCOMPARE(error->isError(), true);
@@ -275,7 +301,7 @@ void SQLiteDataBaseFacadeTest::testFind()
     {
         results.clear();
         element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
-        element->setProperty("_tableName_", QVariant("test_pme;'&"));
+        element->setProperty("_storageName_", QVariant("test_pme;'&"));
         element->setProperty("_id_", QVariant(-1));
         error = m_dbFacade->find(element, results);
         QCOMPARE(error.isNull(), false);
@@ -288,7 +314,7 @@ void SQLiteDataBaseFacadeTest::testFind()
     {
         results.clear();
         element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
-        element->setProperty("_tableName_", QVariant("test_pme"));
+        element->setProperty("_storageName_", QVariant("test_pme"));
         element->setProperty("_id_", QVariant(-1));
         error = m_dbFacade->find(element, results);
         QCOMPARE(error.isNull(), false);
@@ -301,7 +327,7 @@ void SQLiteDataBaseFacadeTest::testFind()
         QVERIFY(not resultElement.isNull());
         QCOMPARE(resultElement->getClassifier(),
                  QString("rowlo::persistence::PersistableModelElement"));
-        QCOMPARE(resultElement->getProperty("_tableName_").toString(),
+        QCOMPARE(resultElement->getProperty("_storageName_").toString(),
                  QString("test_pme"));
         QCOMPARE(resultElement->getProperty("_id_").toInt(), 1);
         QCOMPARE(resultElement->getProperty("foo").toString(),
@@ -311,7 +337,7 @@ void SQLiteDataBaseFacadeTest::testFind()
         QVERIFY(not resultElement.isNull());
         QCOMPARE(resultElement->getClassifier(),
                  QString("rowlo::persistence::PersistableModelElement"));
-        QCOMPARE(resultElement->getProperty("_tableName_").toString(),
+        QCOMPARE(resultElement->getProperty("_storageName_").toString(),
                  QString("test_pme"));
         QCOMPARE(resultElement->getProperty("_id_").toInt(), 2);
         QCOMPARE(resultElement->getProperty("foo").toString(),
@@ -322,7 +348,7 @@ void SQLiteDataBaseFacadeTest::testFind()
     {
         results.clear();
         element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
-        element->setProperty("_tableName_", QVariant("test_pme"));
+        element->setProperty("_storageName_", QVariant("test_pme"));
         element->setProperty("_id_", QVariant(1));
         error = m_dbFacade->find(element, results);
         QCOMPARE(error.isNull(), false);
@@ -376,7 +402,7 @@ void SQLiteDataBaseFacadeTest::testUpdate()
 
     // check for DB_CANNOT_UPDATE_NON_EXISTING_ELEMENT error
     {
-        element->setProperty("_tableName_", QVariant("test_pme"), true);
+        element->setProperty("_storageName_", QVariant("test_pme"), true);
         element->setProperty("_id_", QVariant(-1), true);
         QSharedPointer<Error> error = m_dbFacade->update(element);
         QCOMPARE(error.isNull(), false);
@@ -392,7 +418,7 @@ void SQLiteDataBaseFacadeTest::testUpdate()
         // fetch element from DB
         QList<QSharedPointer<PersistableModelElement> > results;
         element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
-        element->setProperty("_tableName_", QVariant("test_pme"));
+        element->setProperty("_storageName_", QVariant("test_pme"));
         element->setProperty("_id_", QVariant(-1));
         error = m_dbFacade->find(element, results);
         QCOMPARE(error.isNull(), false);
@@ -403,7 +429,7 @@ void SQLiteDataBaseFacadeTest::testUpdate()
         QVERIFY(not resultElement.isNull());
         QCOMPARE(resultElement->getClassifier(),
                  QString("rowlo::persistence::PersistableModelElement"));
-        QCOMPARE(resultElement->getProperty("_tableName_").toString(),
+        QCOMPARE(resultElement->getProperty("_storageName_").toString(),
                  QString("test_pme"));
         QCOMPARE(resultElement->getProperty("foo").toString(),
                  QString("bar"));
@@ -445,7 +471,7 @@ void SQLiteDataBaseFacadeTest::testUpdate()
         // store dummy element for further tests
         QSharedPointer<PersistableModelElement> dummy =
                 QSharedPointer<PersistableModelElement>(new PersistableModelElement());
-        dummy->setProperty("_tableName_", QVariant("test_pme"));
+        dummy->setProperty("_storageName_", QVariant("test_pme"));
         dummy->setProperty("_id_", QVariant(-1));
         dummy->setProperty("foo", QVariant("fuz"));
         QSharedPointer<Error> error = m_dbFacade->store(dummy);
@@ -489,7 +515,7 @@ void SQLiteDataBaseFacadeTest::testRemove()
 
     results.clear();
     element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
-    element->setProperty("_tableName_", QVariant("test_pme"));
+    element->setProperty("_storageName_", QVariant("test_pme"));
     error = m_dbFacade->remove(element);
     QCOMPARE(error.isNull(), false);
     QCOMPARE(error->isError(), true);
@@ -497,7 +523,7 @@ void SQLiteDataBaseFacadeTest::testRemove()
     QCOMPARE(results.size(), 0);
 
     results.clear();
-    element->setProperty("_tableName_", QVariant("test_pme;'&"));
+    element->setProperty("_storageName_", QVariant("test_pme;'&"));
     element->setProperty("_id_", QVariant(-1));
     error = m_dbFacade->remove(element);
     QCOMPARE(error.isNull(), false);
@@ -506,7 +532,7 @@ void SQLiteDataBaseFacadeTest::testRemove()
     QCOMPARE(results.size(), 0);
 
     results.clear();
-    element->setProperty("_tableName_", QVariant("test_pme"));
+    element->setProperty("_storageName_", QVariant("test_pme"));
     element->setProperty("_id_", QVariant(1));
     error = m_dbFacade->find(element, results);
     QCOMPARE(error.isNull(), false);
@@ -556,7 +582,7 @@ void SQLiteDataBaseFacadeTest::insertTestData()
     QSharedPointer<PersistableModelElement> element =
             QSharedPointer<PersistableModelElement>(new PersistableModelElement());
     element->setProperty("foo", QVariant("value of foo"));
-    element->setProperty("_tableName_", QVariant("test_pme"), true);
+    element->setProperty("_storageName_", QVariant("test_pme"), true);
     element->setProperty("_id_", QVariant(-1), true);
     QSharedPointer<Error> error = m_dbFacade->store(element);
     QCOMPARE(error.isNull(), false);
@@ -569,7 +595,7 @@ void SQLiteDataBaseFacadeTest::insertTestData()
 
     element = QSharedPointer<PersistableModelElement>(new PersistableModelElement());
     element->setProperty("foo", QVariant("value of bar"));
-    element->setProperty("_tableName_", QVariant("test_pme"), true);
+    element->setProperty("_storageName_", QVariant("test_pme"), true);
     element->setProperty("_id_", QVariant(-1), true);
     error = m_dbFacade->store(element);
     QCOMPARE(error.isNull(), false);

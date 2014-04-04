@@ -1,7 +1,7 @@
 /*
  * RPF - Rowlo Persistence Framework: Sqlite persistence layer.
  *
- * File:    libRowloSqlitePersistence/include/persistence/sqlite/ErrorCodes.h
+ * File:    libRowloSqlitePersistence/include/persistence/sqlite/ErrorCodesSqlite.h
  * Brief:   Error codes used by Sqlite data base facade.
  *
  * Copyright (C) 2013  Robert Wloch (robert@rowlo.de)
@@ -21,8 +21,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * or browse: http://www.gnu.org/licenses/lgpl-2.1.html
 */
-#ifndef SQLITE_ERRORCODES_H
-#define SQLITE_ERRORCODES_H
+#ifndef SQLITE_ERRORCODESSQLITE_H
+#define SQLITE_ERRORCODESSQLITE_H
 
 namespace rowlo
 {
@@ -47,4 +47,4 @@ namespace errorcodes
 } // namespace errorcodes
 } // namespace rowlo
 
-#endif // SQLITE_ERRORCODES_H
+#endif // SQLITE_ERRORCODESSQLITE_H
